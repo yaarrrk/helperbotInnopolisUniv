@@ -1,0 +1,15 @@
+[Unit]
+Description=Telegram Bot
+After=network.target
+
+[Service]
+User=yarosav
+Group=yarosav
+
+WorkingDirectory=/home/yarosav/helperbotInnopolisUniv/
+Environment="PYTHONPATH=/home/yarosav/helperbotInnopolisUniv/"
+ExecStart=home/yarosav/helperbotInnopolisUniv/.venv/bin/python  /home/yarosav/helperbotInnopolisUniv/main.py
+
+[Install]
+WantedBy=multi-user.target
+
