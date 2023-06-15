@@ -14,6 +14,7 @@ btnHello7 = KeyboardButton('/Геолокация')
 btnHello8 = KeyboardButton('/Болят_икры')
 btnHello9 = KeyboardButton('/Болит_кисть_ноги')
 btnhello10 = KeyboardButton('/start')
+btnHello11 = KeyboardButton('/Чатик')
 greet = ReplyKeyboardMarkup().add(btnHello)
 greet.add(btnHello1)
 greet.add(btnhello2)
@@ -25,6 +26,7 @@ greet.add(btnHello7)
 greet.add(btnHello8)
 greet.add(btnHello9)
 greet.add(btnhello10)
+greet.add(btnHello11)
 
 
 
@@ -35,12 +37,6 @@ pandol = InlineKeyboardButton(text = 'Панадол', url = 'https://www.eaptek
 golova = InlineKeyboardMarkup().add(analgin)
 golova.add(paracetamol)
 golova.add(pandol)
-
-
-
-
-
-
 
 
 

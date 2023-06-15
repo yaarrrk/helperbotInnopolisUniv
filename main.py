@@ -1,23 +1,16 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+import asyncio
 from env import API_TOKEN
-from aiogram.types import ReplyKeyboardRemove, \
-    ReplyKeyboardMarkup, KeyboardButton, \
-    InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram import Bot, Dispatcher, executor, types
 import keyboard as kb
-
-
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher import FSMContext
 
 
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher(bot, storage=MemoryStorage())
 
-
-
-
-
-
+connected_users = []
 
 @dp.message_handler(commands=(['start']))
 async def send_welcome(message: types.Message):
@@ -96,8 +89,45 @@ async def send_welcome(message: types.Message):
 async def golocation(message:types.message):
     await message.reply('Определи свою геолокацию, или Контакт', reply_markup=kb.markup_requests)
 
+@dp.message_handler(commands=(['Чатик']))
+async def chat (message:types.Message, state: FSMContext):
+    await message.answer("Привет! Хочешь пообщатся с людьми по поводу своих проблем со здоровьем?\n Напиши своё имя!")
+
+    await state.set_state("q1")
+
+
+@dp.message_handler(state="q1")
+async def process_name(message:types.Message, state:FSMContext):
+    name = message.text
+    await state.update_data({"name" : name})
+    await state.set_state("q2")
+    await message.answer("Сколько тебе лет?")
+@dp.message_handler(state = "q2")
+async def process_age(message: types.Message, state: FSMContext):
+    age = message.text
+    if age.isdigit():
+        await state.update_data({"age" : int(age)})
+        await state.set_state("echo")
+        await message.answer("Теперь ты в чате!", )
+        connected_users.append(message.from_user.id)
+        await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
+    else:
+        data = await state.get_data('echo')
+        await message.answer(f"Напиши свой возраст цифрами, {data['name']}")
+
+@dp.message_handler(state = "echo")
+async def echo(message: types.Message, state: FSMContext):
+    name = ['name']
+    age = ['age']
+    tasks = []
+    for user in connected_users:
+        if message.from_user.id == user:
+            continue
+        tasks.append(
+            bot.send_message(user, f'{name}, {age} : {message.text}')
+            )
+    await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
-
