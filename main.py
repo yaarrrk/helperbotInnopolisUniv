@@ -1,6 +1,3 @@
-
-
-
 from env import API_TOKEN
 from aiogram import Bot, Dispatcher, executor, types
 import keyboard as kb
@@ -23,6 +20,10 @@ async def send_welcome(message: types.Message, state: FSMContext):
         "Привет, я Алиса! Выбери лекарство, которое тебе нужно!/\nЧтобы вернуться обратно в меню, нажми на кнопку '/start'!\nPowered by yaarrrk or @hshepisa!",
         reply_markup=kb.greet)
 
+    print(state)
+
+    state_2 = await state.get_state()
+    print(state_2)
 
 @dp.message_handler(commands=(['Голова']))
 async def head(message: types.Message):
@@ -129,18 +130,23 @@ async def process_age(message: types.Message, state: FSMContext):
     if age.isdigit():
         await state.update_data({"age": int(age)})
         await state.set_state("echo")
-        await message.answer("Теперь ты в чате! Напиши /leave для выхода!" )
+        await message.answer("Теперь ты в чате! Напиши /leave для выхода!")
         connected_users.append(message.from_user.id)
         await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
     else:
         data = await state.get_data()
         await message.answer(f"Напиши свой возраст цифрами, {data['name']}")
 
+
 @dp.message_handler(commands='leave', state='*')
 async def leave(message:types.Message, state: FSMContext):
     """Если бы этой функции небыло, то юзер не смог бы выйти мз чата"""
+    if message.from_user.id in connected_users:
+        connected_users.remove(message.from_user.id)
     await message.reply('Ты вышел из чата! Напиши /start для выхода в меню!')
-    await state.reset_state(with_data=False)
+    await state.set_state(None)
+
+
 
 
 @dp.message_handler(state="echo")
@@ -157,6 +163,11 @@ async def echo(message: types.Message, state: FSMContext):
         except ConnectionError as er:
             print(f'User {user_id} blocked the bot')
             connected_users.remove(user_id)
+
+
+
+
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
